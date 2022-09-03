@@ -31,6 +31,13 @@ Count: @=2 X=2
 a~z to put >> a
 ```
 
+先読みの深さを変更するには、robot_c.cpp の上の方にある設定を変更してください。
+
+```c++
+#define SEARCH_DEPTH 12
+#define END_DEPTH 20  // 読み切り
+```
+
 ## 探索
 
 基本的には αβ 探索 & 置換表 を組み合わせた MTD(f)を使用して探索を行う。
