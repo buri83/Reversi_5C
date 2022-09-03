@@ -6,8 +6,8 @@
 #include <stdlib.h>
 
 // 探索深さの設定
-#define SEARCH_DEPTH 9
-#define END_DEPTH 19  // 読み切り
+#define SEARCH_DEPTH 12
+#define END_DEPTH 20  // 読み切り
 
 //評価値出力にかけられている
 #define RVC 1
@@ -324,6 +324,27 @@ public:
 
     }
 
+    int put_alphabet(char c){
+        int i = 0;
+        for(int y=0;y<8;y++){
+            for(int x=0;x<8;x++){
+                if(
+                    (adrs[y*8+x]&black) == 0
+                    && (adrs[y*8+x]&white) == 0
+                    && (adrs[y*8+x]&can) != 0
+                ){
+                    if (c == ('a' + i)){
+                        printf("x=%d, y=%d\n", x, y);
+                        return put(adrs[y*8+x]);
+                    }
+                    i++;
+                }
+            }
+        }
+        printf("[%c] is not found.\n", c);
+        return 0;
+    }
+
     int put(uint64_t pos ,int check_mask = 0){//置くためのビットボードを入力する。
         uint64_t rev=0;
         uint64_t me,enemy,masked_enemy,rev_cand,copied_pos;
@@ -610,25 +631,25 @@ public:
 
     void display(){//盤面を展開・表示する
         int y,x;
-        printf("   0 1 2 3 4 5 6 7  (X)\n");
-        printf("  -----------------\n");
+        int i = 0;
+        printf("    0  1  2  3  4  5  6  7\n");
+        printf("   ------------------------\n");
         for(y=0;y<8;y++){
-            printf("%d|",y);
+            printf("%c |", y + 'A');
             for(x=0;x<8;x++){
                 if((adrs[y*8+x]&black) != 0){
-                    printf(" @");
+                    printf(" @ ");
                 }else if((adrs[y*8+x]&white) != 0){
-                    printf(" O");
+                    printf(" X ");
                 }else if((adrs[y*8+x]&can) != 0){
-                    printf(" x");
+                    printf("[%c]", 'a' + i++);
                 }else{
-                    printf("  ");
+                    printf("   ");
                 }
             }
-            printf(" |\n");
+            printf("|\n");
         }
-        printf("  -----------------\n");
-        printf("(Y)\n");
+        printf("   ------------------------\n");
     }
 
     void next_turn(){//石を置いた後のターン切り替えやパス・ゲーム終了判定を行う
@@ -2611,9 +2632,9 @@ int main(){
         while(game.end_flag == 0){
             printf("\n\n");
             if(game.turn == 1){
-                printf("    @ BLACK TURN @\n\n");
+                printf("        @ BLACK TURN @\n\n");
             }else{
-                printf("    O WHITE TURN O\n\n");
+                printf("        X WHITE TURN X\n\n");
             }
             game.display();
             j = evaluator(game,game.turn);
@@ -2621,12 +2642,13 @@ int main(){
 
             black_cnt = bitcnt64(game.black);
             white_cnt = bitcnt64(game.white);
-            printf("Count: @x%d Ox%d\n", black_cnt, white_cnt);
+            printf("Count: @=%d X=%d\n", black_cnt, white_cnt);
 
             if(game.turn==1){//黒はプレイヤー
-                printf("XY>>");
-                scanf("%d",&i);
-                game.put_xy(i/10,i%10);
+                char put_to[100];
+                printf("a~z to put >> ");
+                scanf("%s", put_to);
+                game.put_alphabet(put_to[0]);
             }else{//白はロボット
                 max_num = MIN_VAL;
                 pos = 1;
@@ -2646,7 +2668,7 @@ int main(){
                     while((can_bf & pos)==0) pos <<= 1;
                     game.put(pos,1);
                     if(64 - (black_cnt + white_cnt) > END_DEPTH){
-                        k = IDDFS(game, SEARCH_DEPTH, -1, 3);
+                        k = MTDf(game, SEARCH_DEPTH, -1);
                     }else{
                         k = search_for_end_game(game, END_DEPTH, MIN_VAL, MAX_VAL, -1);
                     }
@@ -2673,7 +2695,7 @@ int main(){
 
         black_cnt = bitcnt64(game.black);
         white_cnt = bitcnt64(game.white);
-        printf("\nResult: @x%d Ox%d ", black_cnt, white_cnt);
+        printf("\nResult: @=%d X=%d ", black_cnt, white_cnt);
         if(black_cnt > white_cnt){
             printf("You win!\n");
         }else if(black_cnt < white_cnt){
