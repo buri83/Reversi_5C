@@ -6,8 +6,8 @@
 #include <stdlib.h>
 
 // 探索深さの設定
-#define SEARCH_DEPTH 12
-#define END_DEPTH 20  // 読み切り
+#define SEARCH_DEPTH 9
+#define END_DEPTH 19  // 読み切り
 
 //評価値出力にかけられている
 #define RVC 1
@@ -2668,7 +2668,7 @@ int main(){
                     while((can_bf & pos)==0) pos <<= 1;
                     game.put(pos,1);
                     if(64 - (black_cnt + white_cnt) > END_DEPTH){
-                        k = MTDf(game, SEARCH_DEPTH, -1);
+                        k = IDDFS(game, SEARCH_DEPTH, -1, 5);
                     }else{
                         k = search_for_end_game(game, END_DEPTH, MIN_VAL, MAX_VAL, -1);
                     }
